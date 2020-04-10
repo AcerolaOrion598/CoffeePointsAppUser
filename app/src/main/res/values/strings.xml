@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">CoffeePointAppUser</string>
+    <string name="maps_key">YOUR_API_KEY</string>
+    <string name="point_owner_label_text">Владелец:</string>
+    <string name="point_status_true">Открыта</string>
+    <string name="point_status_false">Закрыта</string>
+    <string name="some_string_is_null_text">Не указано</string>
+    <string name="point_name_null">Имя Не Указано</string>
+    <string name="point_product_null">У данной точки нет продуктов</string>
+</resources>

@@ -1,0 +1,4 @@
+<resources>
+    <dimen name="marker_size">50dp</dimen>
+    <dimen name="map_point_products_recycler_view_max_height">175dp</dimen>
+</resources>
