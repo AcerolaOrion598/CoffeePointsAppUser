@@ -16,8 +16,12 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
+import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.djaphar.coffeepointappuser.R;
 import com.djaphar.coffeepointappuser.SupportClasses.Adapters.MapPointProductsRecyclerViewAdapter;
@@ -53,16 +57,21 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private MapPointsChangeChecker mapPointsChangeChecker;
     private GoogleMap gMap;
     private SupportMapFragment supportMapFragment;
-    private String[] perms = new String[2];
+    private String[] locationPerms = new String[2];
     private ArrayList<Marker> markers = new ArrayList<>(), tempMarkers = new ArrayList<>();
     private Point focusedMarkerInfo;
     private Resources resources;
-    private ConstraintLayout pointInfoWindow;
+    private ConstraintLayout pointInfoWindow, reviewWindow;
     private String statusTrueText, statusFalseText;
-    private TextView pointName, pointOwner, pointActive;
+    private TextView pointName, pointOwner, pointActive, pointRatingTv;
+    private Button sendReviewsBtn, showReviewWindowBtn;
+    private ImageView pointRatingIv;
     private RecyclerView mapPointProductsRecyclerView;
+    private ArrayList<ImageButton> supStars = new ArrayList<>(), courStars = new ArrayList<>();
+    private Integer supReview, courReview;
     private int markerSize, whoMoved, statusTrueColor, statusFalseColor;
-    private float infoWindowCorrectionY, infoWindowStartMotionY, infoWindowEndMotionY;
+    private float infoWindowCorrectionY, infoWindowStartMotionY, infoWindowEndMotionY,
+            reviewWindowStartMotionY, reviewWindowCorrectionY, reviewWindowEndMotionY;
     private boolean alreadyFocused = false;
 
     @SuppressLint("ClickableViewAccessibility")
@@ -72,8 +81,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         mainViewModel = new ViewModelProvider(this).get(MainViewModel.class);
         setContentView(R.layout.activity_main);
         mapPointsChangeChecker = new MapPointsChangeChecker(new Handler(), this);
-        perms[0] = Manifest.permission.ACCESS_COARSE_LOCATION;
-        perms[1] = Manifest.permission.ACCESS_FINE_LOCATION;
+        locationPerms[0] = Manifest.permission.ACCESS_COARSE_LOCATION;
+        locationPerms[1] = Manifest.permission.ACCESS_FINE_LOCATION;
         resources = getResources();
         markerSize = (int) resources.getDimension(R.dimen.marker_size);
         statusTrueText = getString(R.string.point_status_true);
@@ -81,10 +90,55 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         statusTrueColor = resources.getColor(R.color.colorGreen60);
         statusFalseColor = resources.getColor(R.color.colorRed60);
         pointInfoWindow = findViewById(R.id.point_info_window);
+        reviewWindow = findViewById(R.id.review_window);
         pointName = findViewById(R.id.point_name);
         pointOwner = findViewById(R.id.point_owner);
         pointActive = findViewById(R.id.point_active);
+        pointRatingTv = findViewById(R.id.point_rating_tv);
+        pointRatingIv = findViewById(R.id.point_rating_iv);
         mapPointProductsRecyclerView = findViewById(R.id.map_point_products_recycler_view);
+        sendReviewsBtn = findViewById(R.id.send_reviews_btn);
+        showReviewWindowBtn = findViewById(R.id.show_review_window_btn);
+        Button reviewCancelBtn = findViewById(R.id.review_cancel_btn);
+        ImageButton supStarOneBtn = findViewById(R.id.sup_star_one_btn);
+        ImageButton supStarTwoBtn = findViewById(R.id.sup_star_two_btn);
+        ImageButton supStarThreeBtn = findViewById(R.id.sup_star_three_btn);
+        ImageButton supStarFourBtn = findViewById(R.id.sup_star_four_btn);
+        ImageButton supStarFiveBtn = findViewById(R.id.sup_star_five_btn);
+        ImageButton courStarOneBtn = findViewById(R.id.cour_star_one_btn);
+        ImageButton courStarTwoBtn = findViewById(R.id.cour_star_two_btn);
+        ImageButton courStarThreeBtn = findViewById(R.id.cour_star_three_btn);
+        ImageButton courStarFourBtn = findViewById(R.id.cour_star_four_btn);
+        ImageButton courStarFiveBtn = findViewById(R.id.cour_star_five_btn);
+        supStars.add(supStarOneBtn);
+        supStars.add(supStarTwoBtn);
+        supStars.add(supStarThreeBtn);
+        supStars.add(supStarFourBtn);
+        supStars.add(supStarFiveBtn);
+        courStars.add(courStarOneBtn);
+        courStars.add(courStarTwoBtn);
+        courStars.add(courStarThreeBtn);
+        courStars.add(courStarFourBtn);
+        courStars.add(courStarFiveBtn);
+
+//        FirebaseApp.initializeApp(this);
+
+
+//        FirebaseInstanceId.getInstance().getInstanceId().addOnCompleteListener(task -> {
+//            if (!task.isSuccessful()) {
+//                Exception e = task.getException();
+//                if (e != null) {
+//                    Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
+//                }
+//                return;
+//            }
+//
+//            InstanceIdResult result = task.getResult();
+//            if (result != null) {
+//                String token = result.getToken();
+//                Toast.makeText(this, token, Toast.LENGTH_SHORT).show();
+//            }
+//        });
 
         mainViewModel.getSupervisor().observe(this, supervisor -> {
             if (supervisor == null) {
@@ -100,6 +154,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         });
 
         pointInfoWindow.setOnTouchListener(this);
+        reviewWindow.setOnTouchListener(this);
 
         if (supportMapFragment == null) {
             supportMapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map_container);
@@ -107,6 +162,40 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 supportMapFragment.getMapAsync(this);
             }
         }
+
+        showReviewWindowBtn.setOnClickListener(lView -> {
+            for (ImageButton star : supStars) {
+                star.setImageDrawable(resources.getDrawable(R.drawable.ic_star_48dp));
+            }
+
+            for (ImageButton star : courStars) {
+                star.setImageDrawable(resources.getDrawable(R.drawable.ic_star_48dp));
+            }
+
+            supReview = null;
+            courReview = null;
+            sendReviewsBtn.setEnabled(false);
+            showReviewWindowBtn.setEnabled(false);
+
+            ViewDriver.showView(reviewWindow, R.anim.top_view_show_animation, this);
+        });
+        reviewCancelBtn.setOnClickListener(lView -> {
+            ViewDriver.hideView(reviewWindow, R.anim.top_view_hide_animation, this);
+            showReviewWindowBtn.setEnabled(true);
+        });
+
+        supStarOneBtn.setOnClickListener(lView -> setCheckedStars(lView, supStars));
+        supStarTwoBtn.setOnClickListener(lView -> setCheckedStars(lView, supStars));
+        supStarThreeBtn.setOnClickListener(lView -> setCheckedStars(lView, supStars));
+        supStarFourBtn.setOnClickListener(lView -> setCheckedStars(lView, supStars));
+        supStarFiveBtn.setOnClickListener(lView -> setCheckedStars(lView, supStars));
+        courStarOneBtn.setOnClickListener(lView -> setCheckedStars(lView, courStars));
+        courStarTwoBtn.setOnClickListener(lView -> setCheckedStars(lView, courStars));
+        courStarThreeBtn.setOnClickListener(lView -> setCheckedStars(lView, courStars));
+        courStarFourBtn.setOnClickListener(lView -> setCheckedStars(lView, courStars));
+        courStarFiveBtn.setOnClickListener(lView -> setCheckedStars(lView, courStars));
+
+        sendReviewsBtn.setOnClickListener(lView -> Toast.makeText(this, supReview + ", " + courReview, Toast.LENGTH_SHORT).show());
     }
 
     @Override
@@ -128,7 +217,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public void onBackPressed() {
-        if (pointInfoWindow.getVisibility() == View.VISIBLE) {
+        if (reviewWindow.getVisibility() == View.VISIBLE) {
+            ViewDriver.hideView(reviewWindow, R.anim.top_view_hide_animation, this);
+            showReviewWindowBtn.setEnabled(true);
+            return;
+        } else if (pointInfoWindow.getVisibility() == View.VISIBLE) {
             ViewDriver.hideView(pointInfoWindow, R.anim.bottom_view_hide_animation, this);
             removeFocusFromMarker();
             return;
@@ -141,24 +234,20 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         gMap = googleMap;
 
         mainViewModel.getLastBounds().observe(this, lastBounds -> {
-            if (lastBounds == null || gMap == null) {
+            if (alreadyFocused || lastBounds == null || gMap == null) {
                 return;
             }
-            double northLat, northLong, southLat, southLong;
-            northLat = lastBounds.getNorthLat();
-            northLong = lastBounds.getNorthLong();
-            southLat = lastBounds.getSouthLat();
-            southLong = lastBounds.getSouthLong();
-            LatLngBounds bounds = new LatLngBounds(new LatLng(southLat, southLong), new LatLng(northLat, northLong));
+            LatLngBounds bounds = new LatLngBounds(new LatLng(lastBounds.getSouthLat(), lastBounds.getSouthLong()),
+                    new LatLng(lastBounds.getNorthLat(), lastBounds.getNorthLong()));
             gMap.moveCamera(CameraUpdateFactory.newLatLngBounds(bounds, 0));
             requestPointsInBox();
         });
 
-        if (PermissionDriver.hasPerms(perms, this)) {
+        if (PermissionDriver.hasPerms(locationPerms, this)) {
             getDeviceLocation();
             gMap.setMyLocationEnabled(true);
         } else {
-            PermissionDriver.requestPerms(this, perms);
+            PermissionDriver.requestPerms(this, locationPerms);
         }
 
         gMap.setOnCameraMoveStartedListener(this);
@@ -182,11 +271,34 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         gMap.setMyLocationEnabled(true);
     }
 
+    private void setCheckedStars(View view, ArrayList<ImageButton> stars) {
+        for (ImageButton star : stars) {
+            star.setImageDrawable(resources.getDrawable(R.drawable.ic_star_48dp));
+        }
+        int i = 0;
+        for (ImageButton star : stars) {
+            i++;
+            star.setImageDrawable(resources.getDrawable(R.drawable.ic_star_checked_48dp));
+            if (star == view) {
+                break;
+            }
+        }
+        if (stars == supStars) {
+            supReview = i;
+        } else {
+            courReview = i;
+        }
+        if (supReview == null || courReview == null) {
+            return;
+        }
+        sendReviewsBtn.setEnabled(true);
+    }
+
     private void getDeviceLocation() {
         LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
-        if (ActivityCompat.checkSelfPermission(this, perms[0]) != PackageManager.PERMISSION_GRANTED &&
-                ActivityCompat.checkSelfPermission(this, perms[1]) != PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(this, locationPerms[0]) != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(this, locationPerms[1]) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
 
@@ -240,6 +352,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (point == null) {
             return;
         }
+        pointRatingIv.setVisibility(View.GONE);
+        pointRatingTv.setText("");
         pointOwner.setText("");
         mainViewModel.requestSupervisor(point.getSupervisor());
 
@@ -254,6 +368,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             name = getString(R.string.point_name_null);
         }
         pointName.setText(name);
+
+        if (point.getAvgRating() != null) {
+            pointRatingIv.setVisibility(View.VISIBLE);
+            pointRatingTv.setText(point.getAvgRating().toString());
+        }
 
         if (point.getProductList().size() > 5) {
             mapPointProductsRecyclerView.setLayoutParams(new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
@@ -327,7 +446,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         whoMoved = reason;
         if (whoMoved == GoogleMap.OnCameraMoveStartedListener.REASON_GESTURE) {
             removeFocusFromMarker();
+            ViewDriver.hideView(reviewWindow, R.anim.top_view_hide_animation, this);
             ViewDriver.hideView(pointInfoWindow, R.anim.bottom_view_hide_animation, this);
+            showReviewWindowBtn.setEnabled(true);
         }
     }
 
@@ -344,6 +465,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         if (view == pointInfoWindow) {
             return handleInfoWindowMotion(view, motionEvent);
+        }
+
+        if (view == reviewWindow) {
+            return handleReviewWindowMotion(view, motionEvent);
         }
 
         return false;
@@ -374,8 +499,43 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         return false;
     }
 
+    private boolean handleReviewWindowMotion(View view, MotionEvent motionEvent) {
+        switch (motionEvent.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                reviewWindowStartMotionY = motionEvent.getRawY();
+                reviewWindowCorrectionY = view.getY() - reviewWindowStartMotionY;
+                break;
+            case MotionEvent.ACTION_MOVE:
+                reviewWindowEndMotionY = motionEvent.getRawY();
+                if (reviewWindowStartMotionY < reviewWindowEndMotionY) {
+                    break;
+                }
+                view.setY(reviewWindowEndMotionY + reviewWindowCorrectionY);
+                break;
+            case MotionEvent.ACTION_UP:
+                if (reviewWindowEndMotionY != 0 && reviewWindowStartMotionY - reviewWindowEndMotionY > 300) {
+                    setAnimationForSwipedViewHide(view, reviewWindowStartMotionY, reviewWindowCorrectionY);
+                    break;
+                }
+                view.animate().y(reviewWindowCorrectionY + reviewWindowStartMotionY).setDuration(200);
+                break;
+        }
+        return false;
+    }
+
     private void setAnimationForSwipedViewHide(View view, float start, float tempY) {
-        Animation animation = ViewDriver.hideView(view, R.anim.bottom_view_hide_animation, this);
+        showReviewWindowBtn.setEnabled(true);
+        Animation animation = null;
+
+        if (view == pointInfoWindow) {
+            animation = ViewDriver.hideView(view, R.anim.bottom_view_hide_animation, this);
+            ViewDriver.hideView(reviewWindow, R.anim.top_view_hide_animation, this);
+        }
+
+        if (view == reviewWindow) {
+            animation = ViewDriver.hideView(view, R.anim.top_view_hide_animation, this);
+        }
+
         if (animation == null) {
             return;
         }

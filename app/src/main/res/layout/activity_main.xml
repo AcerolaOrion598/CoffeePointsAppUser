@@ -17,6 +17,204 @@
         app:layout_constraintEnd_toEndOf="parent"/>
 
     <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/review_window"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginStart="18dp"
+        android:layout_marginEnd="18dp"
+        android:background="@drawable/rounded_corner_shape"
+        android:elevation="20dp"
+        android:paddingTop="36dp"
+        android:paddingBottom="8dp"
+        android:paddingStart="29dp"
+        android:paddingEnd="29dp"
+        android:translationY="@dimen/top_window_expanded_transition_y"
+        android:clickable="true"
+        android:focusable="true"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/supervisor_review_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:text="@string/supervisor_review_tv_text"
+            android:fontFamily="@font/roboto_medium"
+            android:textSize="20sp"
+            android:textColor="@color/colorBlack87"/>
+
+        <LinearLayout
+            android:id="@+id/supervisor_star_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="20dp"
+            app:layout_constraintTop_toBottomOf="@id/supervisor_review_tv"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <androidx.appcompat.widget.AppCompatImageButton
+                android:id="@+id/sup_star_one_btn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:src="@drawable/ic_star_48dp"
+                android:background="@null"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <androidx.appcompat.widget.AppCompatImageButton
+                android:id="@+id/sup_star_two_btn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@null"
+                android:src="@drawable/ic_star_48dp" />
+
+            <androidx.appcompat.widget.AppCompatImageButton
+                android:id="@+id/sup_star_three_btn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@null"
+                android:src="@drawable/ic_star_48dp" />
+
+            <androidx.appcompat.widget.AppCompatImageButton
+                android:id="@+id/sup_star_four_btn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@null"
+                android:src="@drawable/ic_star_48dp" />
+
+            <androidx.appcompat.widget.AppCompatImageButton
+                android:id="@+id/sup_star_five_btn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@null"
+                android:src="@drawable/ic_star_48dp" />
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/courier_review_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@id/supervisor_star_container"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="20dp"
+            android:text="@string/courier_review_tv_text"
+            android:textSize="20sp"
+            android:fontFamily="@font/roboto_medium"
+            android:textColor="@color/colorBlack87" />
+
+        <LinearLayout
+            android:id="@+id/courier_star_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@id/courier_review_tv"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="20dp"
+            android:orientation="horizontal">
+
+            <androidx.appcompat.widget.AppCompatImageButton
+                android:id="@+id/cour_star_one_btn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:src="@drawable/ic_star_48dp"
+                android:background="@null"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <androidx.appcompat.widget.AppCompatImageButton
+                android:id="@+id/cour_star_two_btn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@null"
+                android:src="@drawable/ic_star_48dp" />
+
+            <androidx.appcompat.widget.AppCompatImageButton
+                android:id="@+id/cour_star_three_btn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@null"
+                android:src="@drawable/ic_star_48dp" />
+
+
+            <androidx.appcompat.widget.AppCompatImageButton
+                android:id="@+id/cour_star_four_btn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@null"
+                android:src="@drawable/ic_star_48dp" />
+
+            <androidx.appcompat.widget.AppCompatImageButton
+                android:id="@+id/cour_star_five_btn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@null"
+                android:src="@drawable/ic_star_48dp" />
+
+        </LinearLayout>
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/send_reviews_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="30dp"
+            app:layout_constraintTop_toBottomOf="@id/courier_star_container"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="26dp"
+            android:paddingStart="15dp"
+            android:paddingEnd="15dp"
+            android:background="@drawable/save_button"
+            android:fontFamily="@font/roboto"
+            android:text="@string/save_btn_text"
+            android:textSize="12sp"
+            android:textColor="@color/colorWhite87"
+            android:enabled="false"/>
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/review_cancel_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="30dp"
+            app:layout_constraintTop_toBottomOf="@+id/courier_star_container"
+            app:layout_constraintEnd_toStartOf="@id/send_reviews_btn"
+            android:layout_marginTop="26dp"
+            android:layout_marginEnd="4dp"
+            android:paddingStart="15dp"
+            android:paddingEnd="15dp"
+            android:background="@drawable/cancel_button"
+            android:text="@string/cancel_btn_text"
+            android:textColor="@color/colorPrimary"
+            android:textSize="12sp"
+            android:fontFamily="@font/roboto"/>
+        
+        <View
+            android:id="@+id/move_review_window_view"
+            android:layout_width="50dp"
+            android:layout_height="5dp"
+            app:layout_constraintTop_toBottomOf="@id/review_cancel_btn"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="8dp"
+            android:background="@drawable/move_view_view"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/point_info_window"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -50,12 +248,34 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
-            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/move_info_window_view"
             android:fontFamily="@font/roboto_medium"
             android:textColor="@color/colorBlack87"
             android:textSize="20sp" />
+
+        <ImageView
+            android:id="@+id/point_rating_iv"
+            android:layout_width="27dp"
+            android:layout_height="27dp"
+            app:layout_constraintTop_toBottomOf="@id/move_info_window_view"
+            app:layout_constraintEnd_toStartOf="@+id/point_rating_tv"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="4dp"
+            android:src="@drawable/ic_star_checked_48dp"
+            tools:ignore="ContentDescription"
+            android:visibility="gone"/>
+
+        <TextView
+            android:id="@+id/point_rating_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@+id/move_info_window_view"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="10dp"
+            android:fontFamily="@font/roboto"
+            android:textSize="20sp"
+            android:textColor="@color/colorBlack87" />
 
         <RelativeLayout
             android:id="@+id/map_point_products_layout"
@@ -108,6 +328,23 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/point_owner" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/show_review_window_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="30dp"
+            app:layout_constraintTop_toBottomOf="@+id/point_owner"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_marginTop="14dp"
+            android:layout_marginBottom="20dp"
+            android:paddingStart="15dp"
+            android:paddingEnd="15dp"
+            android:background="@drawable/save_button"
+            android:text="@string/show_review_window_btn_text"
+            android:fontFamily="@font/roboto"
+            android:textSize="12sp"
+            android:textColor="@color/colorWhite87" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
