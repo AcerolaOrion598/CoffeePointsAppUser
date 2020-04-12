@@ -21,11 +21,14 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.djaphar.coffeepointappuser.R;
 import com.djaphar.coffeepointappuser.SupportClasses.Adapters.MapPointProductsRecyclerViewAdapter;
+import com.djaphar.coffeepointappuser.SupportClasses.ApiClasses.AuthModel;
 import com.djaphar.coffeepointappuser.SupportClasses.ApiClasses.Point;
+import com.djaphar.coffeepointappuser.SupportClasses.ApiClasses.Product;
+import com.djaphar.coffeepointappuser.SupportClasses.ApiClasses.ReviewModel;
+import com.djaphar.coffeepointappuser.SupportClasses.ApiClasses.SupervisorModel;
 import com.djaphar.coffeepointappuser.SupportClasses.OtherClasses.MapPointsChangeChecker;
 import com.djaphar.coffeepointappuser.SupportClasses.OtherClasses.PermissionDriver;
 import com.djaphar.coffeepointappuser.SupportClasses.OtherClasses.ViewDriver;
@@ -41,6 +44,8 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Locale;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -63,12 +68,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private Resources resources;
     private ConstraintLayout pointInfoWindow, reviewWindow;
     private String statusTrueText, statusFalseText;
-    private TextView pointName, pointOwner, pointActive, pointRatingTv;
-    private Button sendReviewsBtn, showReviewWindowBtn;
-    private ImageView pointRatingIv;
+    private TextView pointName, pointOwner, pointActive, pointRatingTv, supervisorRatingTv;
+    private Button sendReviewsBtn;
+    private ImageView pointRatingIv, supervisorRatingIv;
     private RecyclerView mapPointProductsRecyclerView;
     private ArrayList<ImageButton> supStars = new ArrayList<>(), courStars = new ArrayList<>();
     private Integer supReview, courReview;
+    private HashMap<String, String> authHeaderMap = new HashMap<>();
+    private SupervisorModel focusedPointSupervisor;
     private int markerSize, whoMoved, statusTrueColor, statusFalseColor;
     private float infoWindowCorrectionY, infoWindowStartMotionY, infoWindowEndMotionY,
             reviewWindowStartMotionY, reviewWindowCorrectionY, reviewWindowEndMotionY;
@@ -96,9 +103,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         pointActive = findViewById(R.id.point_active);
         pointRatingTv = findViewById(R.id.point_rating_tv);
         pointRatingIv = findViewById(R.id.point_rating_iv);
+        supervisorRatingTv = findViewById(R.id.supervisor_rating_tv);
+        supervisorRatingIv = findViewById(R.id.supervisor_rating_iv);
         mapPointProductsRecyclerView = findViewById(R.id.map_point_products_recycler_view);
         sendReviewsBtn = findViewById(R.id.send_reviews_btn);
-        showReviewWindowBtn = findViewById(R.id.show_review_window_btn);
+        Button showReviewWindowBtn = findViewById(R.id.show_review_window_btn);
         Button reviewCancelBtn = findViewById(R.id.review_cancel_btn);
         ImageButton supStarOneBtn = findViewById(R.id.sup_star_one_btn);
         ImageButton supStarTwoBtn = findViewById(R.id.sup_star_two_btn);
@@ -121,35 +130,32 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         courStars.add(courStarFourBtn);
         courStars.add(courStarFiveBtn);
 
-//        FirebaseApp.initializeApp(this);
+        mainViewModel.requestUser(new AuthModel(""));
 
-
-//        FirebaseInstanceId.getInstance().getInstanceId().addOnCompleteListener(task -> {
-//            if (!task.isSuccessful()) {
-//                Exception e = task.getException();
-//                if (e != null) {
-//                    Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
-//                }
-//                return;
-//            }
-//
-//            InstanceIdResult result = task.getResult();
-//            if (result != null) {
-//                String token = result.getToken();
-//                Toast.makeText(this, token, Toast.LENGTH_SHORT).show();
-//            }
-//        });
+        mainViewModel.getUser().observe(this, user -> {
+            if (user == null) {
+                return;
+            }
+            authHeaderMap.put(getString(R.string.authorization_header), user.getToken());
+        });
 
         mainViewModel.getSupervisor().observe(this, supervisor -> {
             if (supervisor == null) {
                 return;
             }
 
+            focusedPointSupervisor = supervisor;
+
             String name = supervisor.getName();
-            if (name == null || name.equals("")) {
-                name = getString(R.string.some_string_is_null_text);
+            if (name != null && !name.equals("")) {
+                pointOwner.setText(name);
             }
-            pointOwner.setText(name);
+
+            Float rating = supervisor.getAvgRating();
+            if (rating != null) {
+                supervisorRatingIv.setVisibility(View.VISIBLE);
+                supervisorRatingTv.setText(String.format(Locale.US, "%.2f", rating));
+            }
 
         });
 
@@ -175,13 +181,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             supReview = null;
             courReview = null;
             sendReviewsBtn.setEnabled(false);
-            showReviewWindowBtn.setEnabled(false);
 
+            ViewDriver.hideView(pointInfoWindow, R.anim.bottom_view_hide_animation, this);
             ViewDriver.showView(reviewWindow, R.anim.top_view_show_animation, this);
         });
         reviewCancelBtn.setOnClickListener(lView -> {
             ViewDriver.hideView(reviewWindow, R.anim.top_view_hide_animation, this);
-            showReviewWindowBtn.setEnabled(true);
+            ViewDriver.showView(pointInfoWindow, R.anim.bottom_view_show_animation, this);
         });
 
         supStarOneBtn.setOnClickListener(lView -> setCheckedStars(lView, supStars));
@@ -195,7 +201,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         courStarFourBtn.setOnClickListener(lView -> setCheckedStars(lView, courStars));
         courStarFiveBtn.setOnClickListener(lView -> setCheckedStars(lView, courStars));
 
-        sendReviewsBtn.setOnClickListener(lView -> Toast.makeText(this, supReview + ", " + courReview, Toast.LENGTH_SHORT).show());
+        sendReviewsBtn.setOnClickListener(lView -> {
+            mainViewModel.requestSetSupervisorReview(focusedPointSupervisor.get_id(), authHeaderMap,
+                    new ReviewModel(supReview), gMap.getProjection().getVisibleRegion().latLngBounds);
+            mainViewModel.requestSetCourierReview(focusedMarkerInfo.get_id(), authHeaderMap,
+                    new ReviewModel(courReview), gMap.getProjection().getVisibleRegion().latLngBounds);
+            ViewDriver.hideView(reviewWindow, R.anim.top_view_hide_animation, this);
+            removeFocusFromMarker();
+        });
     }
 
     @Override
@@ -217,13 +230,15 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public void onBackPressed() {
-        if (reviewWindow.getVisibility() == View.VISIBLE) {
-            ViewDriver.hideView(reviewWindow, R.anim.top_view_hide_animation, this);
-            showReviewWindowBtn.setEnabled(true);
-            return;
-        } else if (pointInfoWindow.getVisibility() == View.VISIBLE) {
+        if (pointInfoWindow.getVisibility() == View.VISIBLE) {
             ViewDriver.hideView(pointInfoWindow, R.anim.bottom_view_hide_animation, this);
             removeFocusFromMarker();
+            return;
+        }
+
+        if (reviewWindow.getVisibility() == View.VISIBLE) {
+            ViewDriver.hideView(reviewWindow, R.anim.top_view_hide_animation, this);
+            ViewDriver.showView(pointInfoWindow, R.anim.bottom_view_show_animation, this);
             return;
         }
         super.onBackPressed();
@@ -353,7 +368,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             return;
         }
         pointRatingIv.setVisibility(View.GONE);
+        supervisorRatingIv.setVisibility(View.GONE);
         pointRatingTv.setText("");
+        supervisorRatingTv.setText("");
         pointOwner.setText("");
         mainViewModel.requestSupervisor(point.getSupervisor());
 
@@ -369,22 +386,25 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
         pointName.setText(name);
 
-        if (point.getAvgRating() != null) {
+        Float rating = point.getAvgRating();
+        if (rating != null) {
             pointRatingIv.setVisibility(View.VISIBLE);
-            pointRatingTv.setText(point.getAvgRating().toString());
+            pointRatingTv.setText(String.format(Locale.US, "%.2f", rating));
         }
 
-        if (point.getProductList().size() > 5) {
+        ArrayList<Product> products = point.getProductList();
+        if (products.size() > 5) {
             mapPointProductsRecyclerView.setLayoutParams(new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                     (int) resources.getDimension(R.dimen.map_point_products_recycler_view_max_height)));
         } else {
             mapPointProductsRecyclerView.setLayoutParams(new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.WRAP_CONTENT));
         }
-        MapPointProductsRecyclerViewAdapter adapter = new MapPointProductsRecyclerViewAdapter(point.getProductList(), getString(R.string.point_product_null));
+        MapPointProductsRecyclerViewAdapter adapter = new MapPointProductsRecyclerViewAdapter(products, getString(R.string.point_product_null));
         mapPointProductsRecyclerView.setAdapter(adapter);
         mapPointProductsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
+        ViewDriver.hideView(reviewWindow, R.anim.top_view_hide_animation, this);
         ViewDriver.showView(pointInfoWindow, R.anim.bottom_view_show_animation, this);
 
         equalizeMarkers(0.4f);
@@ -394,12 +414,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private MarkerOptions setMarkerOptions(Point point) {
         Bitmap customIcon;
         if (point.getCurrentlyNotHere()) {
-            customIcon = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(resources, R.drawable.green_marker),
-                    markerSize, markerSize, false);
+            customIcon = BitmapFactory.decodeResource(resources, R.drawable.green_marker);
         } else {
-            customIcon = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(resources, R.drawable.red_marker),
-                    markerSize, markerSize, false);
+            customIcon = BitmapFactory.decodeResource(resources, R.drawable.red_marker);
         }
+
+        customIcon = Bitmap.createScaledBitmap(customIcon, markerSize, markerSize, false);
 
         float alphaValue;
         if (focusedMarkerInfo == null) {
@@ -448,7 +468,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             removeFocusFromMarker();
             ViewDriver.hideView(reviewWindow, R.anim.top_view_hide_animation, this);
             ViewDriver.hideView(pointInfoWindow, R.anim.bottom_view_hide_animation, this);
-            showReviewWindowBtn.setEnabled(true);
         }
     }
 
@@ -524,16 +543,15 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private void setAnimationForSwipedViewHide(View view, float start, float tempY) {
-        showReviewWindowBtn.setEnabled(true);
         Animation animation = null;
 
         if (view == pointInfoWindow) {
             animation = ViewDriver.hideView(view, R.anim.bottom_view_hide_animation, this);
-            ViewDriver.hideView(reviewWindow, R.anim.top_view_hide_animation, this);
         }
 
         if (view == reviewWindow) {
             animation = ViewDriver.hideView(view, R.anim.top_view_hide_animation, this);
+            ViewDriver.showView(pointInfoWindow, R.anim.bottom_view_show_animation, this);
         }
 
         if (animation == null) {

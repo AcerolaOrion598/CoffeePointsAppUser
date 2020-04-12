@@ -14,4 +14,5 @@
     <string name="save_btn_text">Сохранить</string>
     <string name="cancel_btn_text">Отмена</string>
     <string name="show_review_window_btn_text">Оставить Отзыв</string>
+    <string name="authorization_header">Authorization</string>
 </resources>

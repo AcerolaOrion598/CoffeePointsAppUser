@@ -4,15 +4,21 @@ import android.app.Application;
 import android.widget.Toast;
 
 import com.djaphar.coffeepointappuser.SupportClasses.ApiClasses.ApiBuilder;
+import com.djaphar.coffeepointappuser.SupportClasses.ApiClasses.AuthModel;
 import com.djaphar.coffeepointappuser.SupportClasses.ApiClasses.Point;
 import com.djaphar.coffeepointappuser.SupportClasses.ApiClasses.PointsApi;
+import com.djaphar.coffeepointappuser.SupportClasses.ApiClasses.ReviewModel;
 import com.djaphar.coffeepointappuser.SupportClasses.ApiClasses.SupervisorModel;
+import com.djaphar.coffeepointappuser.SupportClasses.ApiClasses.User;
 import com.djaphar.coffeepointappuser.SupportClasses.LocalDataClasses.LastBounds;
 import com.djaphar.coffeepointappuser.SupportClasses.LocalDataClasses.LocalDataDao;
 import com.djaphar.coffeepointappuser.SupportClasses.LocalDataClasses.LocalDataRoom;
 import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.firebase.iid.InstanceIdResult;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
@@ -27,6 +33,7 @@ public class MainViewModel extends AndroidViewModel {
     private LiveData<LastBounds> lastBoundsLiveData;
     private MutableLiveData<SupervisorModel> supervisorModelMutableLiveData = new MutableLiveData<>();
     private MutableLiveData<ArrayList<Point>> pointsMutableLiveData = new MutableLiveData<>();
+    private MutableLiveData<User> userMutableLiveData = new MutableLiveData<>();
     private LocalDataDao dao;
     private PointsApi pointsApi;
 
@@ -46,8 +53,83 @@ public class MainViewModel extends AndroidViewModel {
         return supervisorModelMutableLiveData;
     }
 
+    public MutableLiveData<User> getUser() {
+        return userMutableLiveData;
+    }
+
     public LiveData<LastBounds> getLastBounds() {
         return lastBoundsLiveData;
+    }
+
+    public void requestUser(AuthModel authModel) {
+        FirebaseInstanceId.getInstance().getInstanceId().addOnCompleteListener(task -> {
+            if (!task.isSuccessful()) {
+                Exception e = task.getException();
+                if (e != null) {
+                    Toast.makeText(getApplication(), e.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+                return;
+            }
+
+            InstanceIdResult result = task.getResult();
+            if (result != null) {
+                authModel.setDeviceId(result.getToken());
+                Call<User> call = pointsApi.requestUser(authModel);
+                call.enqueue(new Callback<User>() {
+                    @Override
+                    public void onResponse(@NonNull Call<User> call, @NonNull Response<User> response) {
+                        if (!response.isSuccessful()) {
+                            Toast.makeText(getApplication(), response.message(), Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+                        userMutableLiveData.setValue(response.body());
+                    }
+
+                    @Override
+                    public void onFailure(@NonNull Call<User> call, @NonNull Throwable t) {
+                        Toast.makeText(getApplication(), t.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+        });
+    }
+
+    public void requestSetCourierReview(String id, HashMap<String, String> headersMap, ReviewModel reviewModel, LatLngBounds bounds) {
+        Call<Void> call = pointsApi.requestSetCourierReview(id, headersMap, reviewModel);
+        call.enqueue(new Callback<Void>() {
+            @Override
+            public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> response) {
+                if (!response.isSuccessful()) {
+                    Toast.makeText(getApplication(), response.message(), Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                requestPointsInBox(bounds);
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
+                Toast.makeText(getApplication(), t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    public void requestSetSupervisorReview(String id, HashMap<String, String> headersMap, ReviewModel reviewModel, LatLngBounds bounds) {
+        Call<Void> call = pointsApi.requestSetSupervisorReview(id, headersMap, reviewModel);
+        call.enqueue(new Callback<Void>() {
+            @Override
+            public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> response) {
+                if (!response.isSuccessful()) {
+                    Toast.makeText(getApplication(), response.message(), Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                requestPointsInBox(bounds);
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
+                Toast.makeText(getApplication(), t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     public void setLastScreenBounds(double northLat, double northLong, double southLat, double southLong) {
