@@ -4,18 +4,19 @@ import java.util.ArrayList;
 
 public class Point {
 
-    private String _id, phoneNumber, supervisor, name;
+    private String _id, phoneNumber, supervisor, name, hint;
     private Boolean isActive, isCurrentlyNotHere;
     private ArrayList<Product> productList;
     private Float avgRating;
     private Coordinates coordinates;
 
-    public Point(String _id, String phoneNumber, String supervisor, String name, Boolean isActive,
+    public Point(String _id, String phoneNumber, String supervisor, String name, String hint, Boolean isActive,
                  Boolean isCurrentlyNotHere, ArrayList<Product> productList, Float avgRating, Coordinates coordinates) {
         this._id = _id;
         this.phoneNumber = phoneNumber;
         this.supervisor = supervisor;
         this.name = name;
+        this.hint = hint;
         this.isActive = isActive;
         this.isCurrentlyNotHere = isCurrentlyNotHere;
         this.productList = productList;
@@ -37,6 +38,10 @@ public class Point {
 
     public String getName() {
         return name;
+    }
+
+    public String getHint() {
+        return hint;
     }
 
     public Boolean getActive() {
@@ -73,6 +78,10 @@ public class Point {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public void setHint(String hint) {
+        this.hint = hint;
     }
 
     public void setActive(Boolean active) {

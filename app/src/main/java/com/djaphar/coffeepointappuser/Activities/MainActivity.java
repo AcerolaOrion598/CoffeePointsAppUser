@@ -430,10 +430,15 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             alphaValue = 0.4f;
         }
 
+        String hint = point.getHint();
+        if (hint == null) {
+            hint = "";
+        }
+
         return new MarkerOptions()
                 .position(new LatLng(point.getCoordinates().getLat(), point.getCoordinates().getLng()))
-//                .title(point.getHint)
                 .alpha(alphaValue)
+                .title(hint)
                 .icon(BitmapDescriptorFactory.fromBitmap(customIcon));
     }
 
