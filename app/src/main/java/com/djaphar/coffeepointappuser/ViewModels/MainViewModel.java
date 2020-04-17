@@ -3,6 +3,7 @@ package com.djaphar.coffeepointappuser.ViewModels;
 import android.app.Application;
 import android.widget.Toast;
 
+import com.djaphar.coffeepointappuser.R;
 import com.djaphar.coffeepointappuser.SupportClasses.ApiClasses.ApiBuilder;
 import com.djaphar.coffeepointappuser.SupportClasses.ApiClasses.AuthModel;
 import com.djaphar.coffeepointappuser.SupportClasses.ApiClasses.Point;
@@ -87,7 +88,7 @@ public class MainViewModel extends AndroidViewModel {
 
                     @Override
                     public void onFailure(@NonNull Call<User> call, @NonNull Throwable t) {
-                        Toast.makeText(getApplication(), t.getMessage(), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getApplication(), R.string.network_error_toast, Toast.LENGTH_SHORT).show();
                     }
                 });
             }
@@ -108,7 +109,7 @@ public class MainViewModel extends AndroidViewModel {
 
             @Override
             public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
-                Toast.makeText(getApplication(), t.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplication(), R.string.network_error_toast, Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -127,7 +128,7 @@ public class MainViewModel extends AndroidViewModel {
 
             @Override
             public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
-                Toast.makeText(getApplication(), t.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplication(), R.string.network_error_toast, Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -156,7 +157,7 @@ public class MainViewModel extends AndroidViewModel {
 
             @Override
             public void onFailure(@NonNull Call<ArrayList<Point>> call, @NonNull Throwable t) {
-                Toast.makeText(getApplication(), t.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplication(), R.string.network_error_toast, Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -175,7 +176,7 @@ public class MainViewModel extends AndroidViewModel {
 
             @Override
             public void onFailure(@NonNull Call<SupervisorModel> call, @NonNull Throwable t) {
-                Toast.makeText(getApplication(), t.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplication(), R.string.network_error_toast, Toast.LENGTH_SHORT).show();
             }
         });
     }

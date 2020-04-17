@@ -313,7 +313,8 @@
             android:layout_marginTop="7dp"
             android:layout_marginEnd="4dp"
             android:src="@drawable/ic_star_checked_48dp"
-            android:visibility="gone"/>
+            android:visibility="gone"
+            tools:ignore="ContentDescription" />
 
         <TextView
             android:id="@+id/supervisor_rating_tv"

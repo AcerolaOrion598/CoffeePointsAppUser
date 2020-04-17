@@ -147,9 +147,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             focusedPointSupervisor = supervisor;
 
             String name = supervisor.getName();
-            if (name != null && !name.equals("")) {
-                pointOwner.setText(name);
+            if (name == null || name.equals("")) {
+                name = getString(R.string.some_string_is_null_text);
             }
+            pointOwner.setText(name);
 
             Float rating = supervisor.getAvgRating();
             if (rating != null) {
@@ -367,6 +368,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (point == null) {
             return;
         }
+
         pointRatingIv.setVisibility(View.GONE);
         supervisorRatingIv.setVisibility(View.GONE);
         pointRatingTv.setText("");
@@ -414,12 +416,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private MarkerOptions setMarkerOptions(Point point) {
         Bitmap customIcon;
         if (point.getCurrentlyNotHere()) {
-            customIcon = BitmapFactory.decodeResource(resources, R.drawable.green_marker);
+            customIcon = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(resources, R.drawable.green_marker), markerSize, markerSize, false);
         } else {
-            customIcon = BitmapFactory.decodeResource(resources, R.drawable.red_marker);
+            customIcon = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(resources, R.drawable.red_marker), markerSize, markerSize, false);
         }
-
-        customIcon = Bitmap.createScaledBitmap(customIcon, markerSize, markerSize, false);
 
         float alphaValue;
         if (focusedMarkerInfo == null) {

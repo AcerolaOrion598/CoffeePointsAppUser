@@ -1,18 +1,16 @@
 <resources>
     <string name="app_name">CoffeePointAppUser</string>
     <string name="maps_key">YOUR_API_KEY</string>
-    <string name="point_owner_label_text">Владелец:</string>
     <string name="point_status_true">Открыта</string>
     <string name="point_status_false">Закрыта</string>
     <string name="some_string_is_null_text">Не указано</string>
     <string name="point_name_null">Имя Не Указано</string>
     <string name="point_product_null">У данной точки нет продуктов</string>
     <string name="supervisor_review_tv_text">Качество Продуктов</string>
-    <string name="ononoki_chan">Yay! Peace! Peace!</string>
-    <string name="mayoi_chan">Shitsurei! Kamimashita!</string>
     <string name="courier_review_tv_text">Качество Обслуживания</string>
     <string name="save_btn_text">Сохранить</string>
     <string name="cancel_btn_text">Отмена</string>
     <string name="show_review_window_btn_text">Оставить Отзыв</string>
     <string name="authorization_header">Authorization</string>
+    <string name="network_error_toast">Сетевая Ошибка</string>
 </resources>
