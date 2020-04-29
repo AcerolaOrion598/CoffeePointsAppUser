@@ -8,10 +8,11 @@ public class Point {
     private Boolean isActive, isCurrentlyNotHere;
     private ArrayList<Product> productList;
     private Float avgRating;
-    private Coordinates coordinates;
+    private ArrayList<Double> coordinates;
+//    private Coordinates coordinates;
 
     public Point(String _id, String phoneNumber, String supervisor, String name, String hint, Boolean isActive,
-                 Boolean isCurrentlyNotHere, ArrayList<Product> productList, Float avgRating, Coordinates coordinates) {
+                 Boolean isCurrentlyNotHere, ArrayList<Product> productList, Float avgRating, ArrayList<Double> coordinates) {
         this._id = _id;
         this.phoneNumber = phoneNumber;
         this.supervisor = supervisor;
@@ -60,7 +61,7 @@ public class Point {
         return avgRating;
     }
 
-    public Coordinates getCoordinates() {
+    public ArrayList<Double> getCoordinates() {
         return coordinates;
     }
 
@@ -100,7 +101,7 @@ public class Point {
         this.avgRating = avgRating;
     }
 
-    public void setCoordinates(Coordinates coordinates) {
+    public void setCoordinates(ArrayList<Double> coordinates) {
         this.coordinates = coordinates;
     }
 }

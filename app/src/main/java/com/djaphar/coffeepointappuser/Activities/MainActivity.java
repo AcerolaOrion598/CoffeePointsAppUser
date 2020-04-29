@@ -416,9 +416,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private MarkerOptions setMarkerOptions(Point point) {
         Bitmap customIcon;
         if (point.getCurrentlyNotHere()) {
-            customIcon = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(resources, R.drawable.green_marker), markerSize, markerSize, false);
+            customIcon = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(resources, R.drawable.active_marker), markerSize, markerSize, false);
         } else {
-            customIcon = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(resources, R.drawable.red_marker), markerSize, markerSize, false);
+            customIcon = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(resources, R.drawable.inactive_marker), markerSize, markerSize, false);
         }
 
         float alphaValue;
@@ -436,15 +436,15 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
 
         return new MarkerOptions()
-                .position(new LatLng(point.getCoordinates().getLat(), point.getCoordinates().getLng()))
+                .position(new LatLng(point.getCoordinates().get(1), point.getCoordinates().get(0)))
                 .alpha(alphaValue)
                 .title(hint)
                 .icon(BitmapDescriptorFactory.fromBitmap(customIcon));
     }
 
     private boolean focusedMarker(Point point) {
-        LatLng focusedLatLng = new LatLng(focusedMarkerInfo.getCoordinates().getLat(), focusedMarkerInfo.getCoordinates().getLng());
-        LatLng currentLatLng = new LatLng(point.getCoordinates().getLat(), point.getCoordinates().getLng());
+        LatLng focusedLatLng = new LatLng(focusedMarkerInfo.getCoordinates().get(1), focusedMarkerInfo.getCoordinates().get(0));
+        LatLng currentLatLng = new LatLng(point.getCoordinates().get(1), point.getCoordinates().get(0));
         return focusedLatLng.latitude == currentLatLng.latitude && focusedLatLng.longitude == currentLatLng.longitude;
     }
 
