@@ -13,7 +13,7 @@ import retrofit2.http.Query;
 
 public interface PointsApi {
 
-    @GET("api/couriers")
+    @GET("api/couriers/all")
     Call<ArrayList<Point>> requestPointsInBox(@Query("box") String box);
 
     @GET("api/supervisors/{id}")

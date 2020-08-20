@@ -152,7 +152,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
             pointOwner.setText(name);
 
-            Float rating = supervisor.getAvgRating();
+            Float rating = supervisor.getRating();
             if (rating != null) {
                 supervisorRatingIv.setVisibility(View.VISIBLE);
                 supervisorRatingTv.setText(String.format(Locale.US, "%.2f", rating));
@@ -261,6 +261,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         if (PermissionDriver.hasPerms(locationPerms, this)) {
             getDeviceLocation();
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                return;
+            }
             gMap.setMyLocationEnabled(true);
         } else {
             PermissionDriver.requestPerms(this, locationPerms);
@@ -274,8 +278,15 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             removeMarkers();
             rewriteMarkerList();
             gMap.setOnMarkerClickListener(marker -> {
-                showPointInfo(marker);
                 focusedMarkerInfo = (Point) marker.getTag();
+                focusedMarkerInfo = (Point) marker.getTag();
+                if (focusedMarkerInfo == null) {
+                    return false;
+                }
+                if (focusedMarkerInfo.getAmount() > 1) {
+                    return false;
+                }
+                showPointInfo(marker);
                 return false;
             });
         });
@@ -284,6 +295,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         getDeviceLocation();
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+            ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
         gMap.setMyLocationEnabled(true);
     }
 
@@ -376,7 +391,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         pointOwner.setText("");
         mainViewModel.requestSupervisor(point.getSupervisor());
 
-        if (point.getCurrentlyNotHere()) {
+        if (point.isAway()) {
             ViewDriver.setStatusTvOptions(pointActive, statusTrueText, statusTrueColor);
         } else {
             ViewDriver.setStatusTvOptions(pointActive, statusFalseText, statusFalseColor);
@@ -388,7 +403,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
         pointName.setText(name);
 
-        Float rating = point.getAvgRating();
+        Float rating = point.getRating();
         if (rating != null) {
             pointRatingIv.setVisibility(View.VISIBLE);
             pointRatingTv.setText(String.format(Locale.US, "%.2f", rating));
@@ -414,21 +429,23 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private MarkerOptions setMarkerOptions(Point point) {
+        Integer amount = point.getAmount();
+        if (amount > 1) {
+            return new MarkerOptions()
+                    .position(new LatLng(point.getCoordinates().get(1), point.getCoordinates().get(0)))
+                    .title(getString(R.string.cluster_text) + " " + amount)
+                    .alpha(setAlphaValueForMarker(point))
+                    .icon(BitmapDescriptorFactory.fromBitmap(Bitmap.createScaledBitmap(BitmapFactory.decodeResource(resources, R.drawable.active_marker),
+                            markerSize, markerSize, false)));
+        }
         Bitmap customIcon;
-        if (point.getCurrentlyNotHere()) {
+        if (point.isAway()) {
             customIcon = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(resources, R.drawable.active_marker), markerSize, markerSize, false);
         } else {
             customIcon = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(resources, R.drawable.inactive_marker), markerSize, markerSize, false);
         }
 
-        float alphaValue;
-        if (focusedMarkerInfo == null) {
-            alphaValue = 0.87f;
-        } else if (focusedMarker(point)) {
-            alphaValue = 1.0f;
-        } else {
-            alphaValue = 0.4f;
-        }
+        float alphaValue = setAlphaValueForMarker(point);
 
         String hint = point.getHint();
         if (hint == null) {
@@ -440,6 +457,18 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .alpha(alphaValue)
                 .title(hint)
                 .icon(BitmapDescriptorFactory.fromBitmap(customIcon));
+    }
+
+    private float setAlphaValueForMarker(Point point) {
+        float alphaValue;
+        if (focusedMarkerInfo == null) {
+            alphaValue = 0.87f;
+        } else if (focusedMarker(point)) {
+            alphaValue = 1.0f;
+        } else {
+            alphaValue = 0.4f;
+        }
+        return alphaValue;
     }
 
     private boolean focusedMarker(Point point) {

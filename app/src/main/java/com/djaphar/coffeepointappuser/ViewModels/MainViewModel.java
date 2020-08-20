@@ -75,8 +75,7 @@ public class MainViewModel extends AndroidViewModel {
             InstanceIdResult result = task.getResult();
             if (result != null) {
                 authModel.setDeviceId(result.getToken());
-                Call<User> call = pointsApi.requestUser(authModel);
-                call.enqueue(new Callback<User>() {
+                pointsApi.requestUser(authModel).enqueue(new Callback<User>() {
                     @Override
                     public void onResponse(@NonNull Call<User> call, @NonNull Response<User> response) {
                         if (!response.isSuccessful()) {
@@ -96,8 +95,7 @@ public class MainViewModel extends AndroidViewModel {
     }
 
     public void requestSetCourierReview(String id, HashMap<String, String> headersMap, ReviewModel reviewModel, LatLngBounds bounds) {
-        Call<Void> call = pointsApi.requestSetCourierReview(id, headersMap, reviewModel);
-        call.enqueue(new Callback<Void>() {
+        pointsApi.requestSetCourierReview(id, headersMap, reviewModel).enqueue(new Callback<Void>() {
             @Override
             public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> response) {
                 if (!response.isSuccessful()) {
@@ -115,8 +113,7 @@ public class MainViewModel extends AndroidViewModel {
     }
 
     public void requestSetSupervisorReview(String id, HashMap<String, String> headersMap, ReviewModel reviewModel, LatLngBounds bounds) {
-        Call<Void> call = pointsApi.requestSetSupervisorReview(id, headersMap, reviewModel);
-        call.enqueue(new Callback<Void>() {
+        pointsApi.requestSetSupervisorReview(id, headersMap, reviewModel).enqueue(new Callback<Void>() {
             @Override
             public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> response) {
                 if (!response.isSuccessful()) {
@@ -143,9 +140,7 @@ public class MainViewModel extends AndroidViewModel {
 
     public void requestPointsInBox(LatLngBounds bounds) {
         String box = bounds.southwest.longitude + "," + bounds.southwest.latitude + "," + bounds.northeast.longitude + "," + bounds.northeast.latitude;
-//        String box = bounds.southwest.latitude + "," + bounds.southwest.longitude + "," + bounds.northeast.latitude + "," + bounds.northeast.longitude;
-        Call<ArrayList<Point>> call = pointsApi.requestPointsInBox(box);
-        call.enqueue(new Callback<ArrayList<Point>>() {
+        pointsApi.requestPointsInBox(box).enqueue(new Callback<ArrayList<Point>>() {
             @Override
             public void onResponse(@NonNull Call<ArrayList<Point>> call, @NonNull Response<ArrayList<Point>> response) {
                 if (!response.isSuccessful()) {
@@ -163,8 +158,7 @@ public class MainViewModel extends AndroidViewModel {
     }
 
     public void requestSupervisor(String supervisorId) {
-        Call<SupervisorModel> call = pointsApi.requestSupervisor(supervisorId);
-        call.enqueue(new Callback<SupervisorModel>() {
+        pointsApi.requestSupervisor(supervisorId).enqueue(new Callback<SupervisorModel>() {
             @Override
             public void onResponse(@NonNull Call<SupervisorModel> call, @NonNull Response<SupervisorModel> response) {
                 if (!response.isSuccessful()) {

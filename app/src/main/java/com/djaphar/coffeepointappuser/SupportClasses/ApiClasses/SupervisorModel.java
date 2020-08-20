@@ -3,12 +3,12 @@ package com.djaphar.coffeepointappuser.SupportClasses.ApiClasses;
 public class SupervisorModel {
 
     private String _id, name;
-    private Float avgRating;
+    private Float rating;
 
-    public SupervisorModel(String _id, String name, Float avgRating) {
+    public SupervisorModel(String _id, String name, Float rating) {
         this._id = _id;
         this.name = name;
-        this.avgRating = avgRating;
+        this.rating = rating;
     }
 
     public String get_id() {
@@ -19,8 +19,8 @@ public class SupervisorModel {
         return name;
     }
 
-    public Float getAvgRating() {
-        return avgRating;
+    public Float getRating() {
+        return rating;
     }
 
     public void set_id(String _id) {
@@ -31,7 +31,7 @@ public class SupervisorModel {
         this.name = name;
     }
 
-    public void setAvgRating(Float avgRating) {
-        this.avgRating = avgRating;
+    public void setRating(Float rating) {
+        this.rating = rating;
     }
 }
